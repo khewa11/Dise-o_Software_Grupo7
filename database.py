@@ -6,21 +6,13 @@ from datetime import datetime
 # Cargar variables de entorno desde el archivo .env
 load_dotenv()
 
-####################################################
-db_host = os.getenv('DB_HOST')
-db_port = os.getenv('DB_PORT')
-db_name = os.getenv('DB_NAME')
-db_user = os.getenv('DB_USER')
-db_pass = os.getenv('DB_PASS')
-
-####################################################
 connection = psycopg2.connect(
-    host=db_host,
-    port=db_port,
-    database=db_name,
-    user=db_user,
-    password=db_pass
-)
+        host="shuttle.proxy.rlwy.net",  
+        port=56202,                      
+        database="railway",             
+        user="postgres",   
+        password="TmgcmXeCJiWEXnXGQbuvECJHnZXNdInt"
+    )
 class Usuarios:
     def __init__(self, id, nombre, correo, tipo_usuario, fecha_registro):
         self.id = id
@@ -46,6 +38,8 @@ class Paquete:
         self.usuario_id = usuario_id
         self.estado_entrega_id = estado_entrega_id
         self.ruta_id = ruta_id
+
+
 def ver_tablas():
     with connection.cursor() as cursor:
         cursor.execute(
@@ -74,7 +68,6 @@ def ver_tablas():
             except Exception as e:
                 print(f"No se pudo consultar la tabla {nombre_tabla}:", e)
 
-
 def incluir_usuario(id, nombre, correo, tipo_usuario):
     fecha_registro = datetime.now()
     with connection:
@@ -97,7 +90,7 @@ def buscar_usuario(id):
     else:
         print("usuario no encontrado.")
         return None
-
+#////////// funciones de paquete//////////
 def incluir_paquete(id, peso, dimensiones, fecha_envio, usuario_id, estado_entrega_id, ruta_id):
     with connection:
         with connection.cursor() as cursor:
@@ -108,7 +101,7 @@ def incluir_paquete(id, peso, dimensiones, fecha_envio, usuario_id, estado_entre
                 """,
                 (id, peso, dimensiones, fecha_envio, usuario_id, estado_entrega_id, ruta_id)
             )
-  
+
 def buscar_paquete(id):
     cursor = connection.cursor()
     cursor.execute("SELECT * FROM paquete WHERE id = %s", (id,))
@@ -133,7 +126,36 @@ def cambiar_estado_paquete(paquete_id, nuevo_estado):
     connection.commit()
     print(f"Estado del paquete {paquete_id} actualizado a {nuevo_estado}.")
 
+def obtener_todos_los_paquetes():
+    paquetes = []
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM paquete")
+        rows = cursor.fetchall()
+        for row in rows:
+            paquete = Paquete(*row)
+            paquetes.append(paquete)
+    return paquetes
 
+def obtener_paquetes_por_estado(estado_entrega_id):
+    paquetes = []
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM paquete WHERE estado_entrega_id = %s", (estado_entrega_id,))
+        rows = cursor.fetchall()
+        for row in rows:
+            paquete = Paquete(*row)
+            paquetes.append(paquete)
+    return paquetes
+
+def obtener_paquetes_por_usuario(usuario_id):
+    paquetes = []
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM paquete WHERE usuario_id = %s", (usuario_id,))
+        rows = cursor.fetchall()
+        for row in rows:
+            paquete = Paquete(*row)
+            paquetes.append(paquete)
+    return paquetes
+#///////////////////////////////////////////////////////
 def incluir_ruta(id, origen, destino, distancia_km, duracion_estimada_min):
     with connection:
         with connection.cursor() as cursor:
@@ -157,8 +179,6 @@ def buscar_ruta(id):
         return None
 
 if __name__ == '__main__':
-    # Ejemplo de uso
     ver_tablas()
-    connection.close()
 
     connection.close()
