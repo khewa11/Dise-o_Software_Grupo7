@@ -1,0 +1,82 @@
+<!-- templates/tabla_paquetes.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tabla de Envíos</title>
+    <style>
+        body {
+            background-color: yellow;
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        table {
+            background-color: white;
+            border-collapse: collapse;
+            width: 80%;
+        }
+        th, td {
+            padding: 8px;
+        }
+        .logo {
+            width: 200px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='logo.png') }}" class="logo">
+        <h1>Tabla de Paquetes</h1>
+    </div>
+
+    <form method="get" action="{{ url_for('views.tabla_paquete') }}">
+        <label>
+            <input type="radio" name="estado" value="" onchange="this.form.submit()" {% if not estado_actual %}checked{% endif %}>
+            Ver Todos
+        </label>
+        <label>
+            <input type="radio" name="estado" value="1" onchange="this.form.submit()" {% if estado_actual == 1 %}checked{% endif %}>
+            En preparación
+        </label>
+        <label>
+            <input type="radio" name="estado" value="2" onchange="this.form.submit()" {% if estado_actual == 2 %}checked{% endif %}>
+            En tránsito
+        </label>
+        <label>
+            <input type="radio" name="estado" value="3" onchange="this.form.submit()" {% if estado_actual == 3 %}checked{% endif %}>
+            Entregado
+        </label><br><br>
+        
+    </form>
+    {% set estados = {1: 'En preparación', 2: 'En tránsito', 3: 'Entregado'} %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID</th><th>Peso</th><th>Dimensiones</th>
+                <th>Fecha Envío</th><th>Usuario ID</th>
+                <th>Estado Entrega ID</th><th>Ruta ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for paquete in paquetes %}
+            <tr>
+                <td>{{ paquete.id }}</td>
+                <td>{{ paquete.peso }}</td>
+                <td>{{ paquete.dimensiones }}</td>
+                <td>{{ paquete.fecha_envio }}</td>
+                <td>{{ paquete.usuario_id }}</td>
+                <td>{{ estados[paquete.estado_entrega_id] }}</td>
+                <td>{{ paquete.ruta_id }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+
